@@ -12,7 +12,11 @@ public class TeamDProject {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        // this file is for testing, not for functionality
+        TASDatabase db = new TASDatabase();
+        db.getPunch(700);
+        
+        
     }
     
 }
