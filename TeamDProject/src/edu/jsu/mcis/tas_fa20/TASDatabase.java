@@ -6,6 +6,8 @@
 package edu.jsu.mcis.tas_fa20;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Date;
 
 public class TASDatabase {
     
@@ -50,7 +52,6 @@ public class TASDatabase {
         return null;
     }
     
-    
     public Punch getPunch(int id){
         try{
             Statement st = con.createStatement();
@@ -60,39 +61,40 @@ public class TASDatabase {
                     // make new punch, return new punch
                     // punch id int, terminal id int, badge id string
                     // timestamp (long int), punch id type int
+                    //System.out.println(new Date(rs.getTimestamp("originaltimestamp").getTime()));
                     return new Punch(rs.getInt("id"),  // punch number id
                             rs.getInt("terminalid"),  // terminal of punch
                             rs.getString("badgeid"),  // badge of punch
-                            rs.getString("originaltimestamp"),  // timestamp of punch
+                            new Date(rs.getTimestamp("originaltimestamp").getTime()),  // timestamp of punch
                             rs.getInt("punchtypeid")); // punched auto or manual
                 }
             }
         }catch(Exception e){
-            System.out.println(e);
+            //System.out.println(e);
             return null;
         }
         return null;
     }
     
-    
-    
     public Shift getShift(Badge bag){
         try{
             Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery("SELECT * FROM shift");
+            ResultSet rs = st.executeQuery("SELECT * FROM employee");
             while(rs.next()){
-                if(bag.getShift() == rs.getInt("id")){
+                if(bag.getId().equals(rs.getString("badgeid"))){
                     // get the shift from the badge's shift id, return the shift
-                    return new Shift(rs.getInt("id"),  // shift id type
-                            rs.getString("description"), // string of description of shift
-                            rs.getString("start"),  // time
-                            rs.getString("stop"),  // time 
-                            rs.getInt("interval"), // minutes not time
-                            rs.getInt("graceperiod"),  // minutes not time
-                            rs.getInt("dock"),  // minutes not time
-                            rs.getString("lunchstart"),  // time
-                            rs.getString("lunchend"),  // time
-                            rs.getInt("lunchdeduct")); // minutes not time
+                    Statement sta = con.createStatement();
+                    ResultSet res = st.executeQuery("SELECT * FROM shift");
+                    return new Shift(res.getInt("id"), // shift id type
+                            res.getString("description"), // string of description of shift
+                            res.getTime("start").getTime(),  // long (miliseconds after 12 am)
+                            res.getTime("stop").getTime(),  // long (miliseconds after 12 am) 
+                            res.getInt("interval"), // minutes not time
+                            res.getInt("graceperiod"),  // minutes not time
+                            res.getInt("dock"),  // minutes not time
+                            res.getTime("lunchstart").getTime(),  // long (miliseconds after 12 am)
+                            res.getTime("lunchend").getTime(),  // long (miliseconds after 12 am)
+                            res.getInt("lunchdeduct")); // minutes not time
                 }
             }
         }catch(Exception e){
@@ -101,8 +103,63 @@ public class TASDatabase {
         return null;
     }
     
+    public Shift getShift(int id){
+        try{
+            Statement st = con.createStatement();
+            ResultSet res = st.executeQuery("SELECT * FROM shift WHERE id="+id);
+            res.next();
+            return new Shift(res.getInt("id"), // shift id type
+                            res.getString("description"), // string of description of shift
+                            res.getTime("start").getTime(),  // long (miliseconds after 12 am)
+                            res.getTime("stop").getTime(),  // long (miliseconds after 12 am) 
+                            res.getInt("interval"), // minutes not time
+                            res.getInt("graceperiod"),  // minutes not time
+                            res.getInt("dock"),  // minutes not time
+                            res.getTime("lunchstart").getTime(),  // long (miliseconds after 12 am)
+                            res.getTime("lunchend").getTime(),  // long (miliseconds after 12 am)
+                            res.getInt("lunchdeduct")); // minutes not time
+        }
+        catch(Exception e){
+            return null;
+        }
+    }
     
     
     
+    public int insertPunch(Punch p){// -1 output means error
+        try{
+            Statement st = con.createStatement();
+            int id = -1;
+            ResultSet rs = st.executeQuery("SELECT MAX(id) FROM punch");
+            rs.next();
+            id = rs.getInt(1) + 1;
+            StringBuilder query = new StringBuilder();
+            query.append("INSERT INTO punch VALUES (");
+            query.append(id).append(", ").append(p.getTerminalId()).append(", ");
+            query.append(p.getBadgeId()).append(", ").append(p.getTimeStamp());
+            query.append(", ").append(p.getPunchType()).append(")");
+            ResultSet res = st.executeQuery(query.toString());
+            
+            return id;
+        } catch(Exception e){
+            //System.out.println(e);   
+        }
+        return -1;
+    }
+    
+    
+    public ArrayList<Punch> getDailyPunchList(Badge bag, long ts){
+        ArrayList<Punch> punches = new ArrayList<Punch>();
+        
+        try{
+            Statement st = con.createStatement();
+
+            ResultSet rs = st.executeQuery("SELECT * FROM punch WHERE badgeid="+bag.getId());
+        }catch(Exception e){
+            //System.out.println(e);
+        }
+        return punches;
+        
+    }
     
 }
