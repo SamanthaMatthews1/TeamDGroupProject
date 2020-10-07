@@ -36,6 +36,7 @@ public class Badge {
     
     
     //changing the configuration of the badge to a string
+    @Override
     public String toString()
     {
         String s = "#" + id + " (" + name + ")";
