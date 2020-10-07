@@ -7,13 +7,8 @@ package edu.jsu.mcis.tas_fa20;
 
 /**
  *
- * @author penguin
+ * @author Sam
  */
-public class Badge {
+public class TASLogic {
     
-     private String id, name;
-    
-    public Badge(String id, String name){
-        this.id = id;
-        this.name = name;
 }
