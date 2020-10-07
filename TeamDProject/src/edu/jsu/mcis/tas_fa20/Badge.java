@@ -11,4 +11,9 @@ package edu.jsu.mcis.tas_fa20;
  */
 public class Badge {
     
+     private String id, name;
+    
+    public Badge(String id, String name){
+        this.id = id;
+        this.name = name;
 }
