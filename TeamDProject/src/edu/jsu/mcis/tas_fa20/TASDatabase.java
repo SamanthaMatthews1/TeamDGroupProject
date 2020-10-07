@@ -65,7 +65,7 @@ public class TASDatabase {
                     return new Punch(rs.getInt("id"),  // punch number id
                             rs.getInt("terminalid"),  // terminal of punch
                             rs.getString("badgeid"),  // badge of punch
-                            new Date(rs.getTimestamp("originaltimestamp").getTime()),  // timestamp of punch
+                            rs.getTimestamp("originaltimestamp"),  // original timestamp of punch
                             rs.getInt("punchtypeid")); // punched auto or manual
                 }
             }
