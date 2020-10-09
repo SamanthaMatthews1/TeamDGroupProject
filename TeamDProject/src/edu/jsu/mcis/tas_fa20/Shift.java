@@ -75,7 +75,7 @@ public class Shift {
         
         //"Shift 1: 07:00 - 15:30 (510 minutes); Lunch: 12:00 - 12:30 (30 minutes)"
         
-        s.append("Shift 1: ").append(start).append(" - ");
+        s.append(id).append(start).append(" - ");
         s.append(stop).append("(").append(interval).append("); ");
         s.append("Lunch: ").append(lunchstart).append(" - ");
         s.append(lunchend).append(" (").append(lunchdeduct);
