@@ -28,7 +28,7 @@ public class Shift {
         this.lunchdeduct = lunchdeduct;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
