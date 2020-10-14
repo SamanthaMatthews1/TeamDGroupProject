@@ -136,30 +136,13 @@ public class TASDatabase {
             StringBuilder query = new StringBuilder();
             query.append("INSERT INTO punch VALUES (");
             query.append(id).append(", ").append(p.getTerminalId()).append(", ");
-            query.append(p.getBadgeId()).append(", ").append(p.getTimeStamp());
-            query.append(", ").append(p.getPunchType()).append(")");
+            query.append(p.getBadge().getId()).append(", ").append(p.getTimestamp());
+            query.append(", ").append(p.getPunchTypeId()).append(")");
             ResultSet res = st.executeQuery(query.toString());
             
             return id;
         } catch(Exception e){
-            //System.out.println(e);   
         }
         return -1;
     }
-    
-    
-    public ArrayList<Punch> getDailyPunchList(Badge bag, long ts){
-        ArrayList<Punch> punches = new ArrayList<Punch>();
-        
-        try{
-            Statement st = con.createStatement();
-
-            ResultSet rs = st.executeQuery("SELECT * FROM punch WHERE badgeid="+bag.getId());
-        }catch(Exception e){
-            //System.out.println(e);
-        }
-        return punches;
-        
-    }
-    
 }
