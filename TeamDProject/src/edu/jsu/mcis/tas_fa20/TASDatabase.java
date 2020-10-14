@@ -8,6 +8,7 @@ package edu.jsu.mcis.tas_fa20;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Calendar;
 
 public class TASDatabase {
     
@@ -145,4 +146,108 @@ public class TASDatabase {
         }
         return -1;
     }
+
+
+    
+    
+    public ArrayList<Punch> getDailyPunchList(Badge bag, long ts){
+        ArrayList<Punch> punches = new ArrayList<Punch>();
+        
+        //help here D:
+        String badgeid = b.getID();
+        
+        boolean hasresults;
+        
+        ResultSet rs = null;
+        PreparedStatement pstSelect = null, pstUpdate = null;
+        ResultSetMetaData metadata = null;
+        int columnCount, resultCount, updateCount = 0;
+        String key, query;
+        
+        
+        //Creating Gregorian Calendar no idea! uhh can comment it out to test other things.. 
+        GregorianCalendar gcStart = new GregorianCalendar();
+        gcStart.setTimeInMillis(ts);
+        gcStart.set(Calendar.HOUR_OF_DAY, 0);
+        gcStart.set(Calendar.MINUTE, 0);
+        gcStart.set(Calendar.SECOND, 0);
+        
+        GregorianCalendar gcStop = new GregorianCalendar();
+        gcStop.setTimeInMillis(ts);
+        gcStop.set(Calendar.HOUR_OF_DAY, 23);
+        gcStop.set(Calendar.MINUTE, 59);
+        gcStop.set(Calendar.SECOND, 59);
+        
+        try{
+            
+            if(con.isValid(0)){
+                
+                query = "SELECT *, UNIX_TIMESTAMP(`ORIGINALTIMESTAMP`) * 1000 AS ts\n"
+               + "FROM punch\n" 
+               + "WHERE badgeid = ?\n"
+               + "HAVING ts >= ?\n"
+               + "AND ts <= ?\n";
+                pstSelect = con.prepareStatement(query);
+                pstSelect.setString(1, badgeid);
+                pstSelect.setLong(2, gcStart.getTimeInMillis());
+                pstSelect.setLong(3, gcStop.getTimeInMillis());
+                
+                
+                System.out.println("Submitting Query...");
+                hasresults = pstSelect.execute();
+                
+                //Getting Final Results
+                
+                while(hasresults || pstSelect.getUpdateCount() != -1){
+                    
+                    
+                    if(hasresults){
+                        
+                        rs = pstSelect.getResultSet();
+                        metadata = rs.getMetaData();
+                        columnCount = metadata.getColumnCount();
+                        
+                        while(rs.next()){
+                            
+                            int id = rs.getInt("id");
+                            punches.add(getPunch(id));
+                        }         
+                    }
+                    else{
+                        
+                        resultCount = pstSelect.getUpdateCount();
+                        
+                        if(resultCount == -1){
+                            break;
+                            
+                        }
+                    }
+                    
+                    hasresults = pstSelect.getMoreResults();
+                }
+                
+            }
+
+        //ResultSet rs = st.executeQuery("SELECT * FROM punch WHERE badgeid="+bag.getId());
+        }catch(Exception e){
+            
+            System.err.println(e.toString());
+            //System.out.println(e);
+        }
+        
+        finally{
+            //i might change pstSelect to ps and pstUpdate to pu for shorter variables
+            if (rs != null){ try { rs.close(); rs = null; } catch (Exception e){}}
+            
+            if (pstSelect != null) { try { pstSelect.close(); pstSelect = null; } catch (Exception e) {} }
+            
+            if (pstUpdate != null) { try { pstUpdate.close(); pstUpdate = null; } catch (Exception e) {} }
+            
+        }
+        return punches;
+        
+    }
+    
+
+
 }
