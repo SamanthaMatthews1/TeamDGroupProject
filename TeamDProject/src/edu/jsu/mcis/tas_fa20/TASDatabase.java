@@ -7,8 +7,8 @@ package edu.jsu.mcis.tas_fa20;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class TASDatabase {
     
@@ -22,13 +22,13 @@ public class TASDatabase {
         password = "PASSWORD";
         try{
             // CHANGE THIS IF NEEDED
-            Class.forName("com.mysql.jdbc.Driver"); // EVERYONE ELSE
-            con = DriverManager.getConnection("jdbc:mysql://localhost/tas", username, password);
+            //Class.forName("com.mysql.jdbc.Driver"); // EVERYONE ELSE
+            //con = DriverManager.getConnection("jdbc:mysql://localhost/tas", username, password);
             
             
             // DO NOT CHANGE THE NEXT TWO LINES
-            //Class.forName("com.mysql.cj.jdbc.Driver"); // WES'S COMPUTER
-            //con = DriverManager.getConnection("jdbc:mysql://localhost/tas?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", username, password);
+            Class.forName("com.mysql.cj.jdbc.Driver"); // WES'S COMPUTER
+            con = DriverManager.getConnection("jdbc:mysql://localhost/tas?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", username, password);
         
         }catch(Exception e){
             System.out.println(e);
@@ -65,13 +65,12 @@ public class TASDatabase {
                     //System.out.println(new Date(rs.getTimestamp("originaltimestamp").getTime()));
                     return new Punch(rs.getInt("id"),  // punch number id
                             rs.getInt("terminalid"),  // terminal of punch
-                            rs.getString("badgeid"),  // badge of punch
+                            getBadge(rs.getString("badgeid")),  // badge of punch
                             rs.getTimestamp("originaltimestamp"),  // original timestamp of punch
                             rs.getInt("punchtypeid")); // punched auto or manual
                 }
             }
         }catch(Exception e){
-            //System.out.println(e);
             return null;
         }
         return null;
@@ -86,6 +85,7 @@ public class TASDatabase {
                     // get the shift from the badge's shift id, return the shift
                     Statement sta = con.createStatement();
                     ResultSet res = st.executeQuery("SELECT * FROM shift");
+                    res.next();
                     return new Shift(res.getInt("id"), // shift id type
                             res.getString("description"), // string of description of shift
                             res.getTime("start").getTime(),  // long (miliseconds after 12 am)
@@ -94,11 +94,12 @@ public class TASDatabase {
                             res.getInt("graceperiod"),  // minutes not time
                             res.getInt("dock"),  // minutes not time
                             res.getTime("lunchstart").getTime(),  // long (miliseconds after 12 am)
-                            res.getTime("lunchend").getTime(),  // long (miliseconds after 12 am)
+                            res.getTime("lunchstop").getTime(),  // long (miliseconds after 12 am)
                             res.getInt("lunchdeduct")); // minutes not time
                 }
             }
         }catch(Exception e){
+            System.out.println(e);
             return null;
         }
         return null;
@@ -117,7 +118,7 @@ public class TASDatabase {
                             res.getInt("graceperiod"),  // minutes not time
                             res.getInt("dock"),  // minutes not time
                             res.getTime("lunchstart").getTime(),  // long (miliseconds after 12 am)
-                            res.getTime("lunchend").getTime(),  // long (miliseconds after 12 am)
+                            res.getTime("lunchstop").getTime(),  // long (miliseconds after 12 am)
                             res.getInt("lunchdeduct")); // minutes not time
         }
         catch(Exception e){
@@ -154,7 +155,7 @@ public class TASDatabase {
         ArrayList<Punch> punches = new ArrayList<Punch>();
         
         //help here D:
-        String badgeid = b.getID();
+        String badgeid = bag.getId();
         
         boolean hasresults;
         
@@ -228,11 +229,9 @@ public class TASDatabase {
                 
             }
 
-        //ResultSet rs = st.executeQuery("SELECT * FROM punch WHERE badgeid="+bag.getId());
+        
         }catch(Exception e){
             
-            System.err.println(e.toString());
-            //System.out.println(e);
         }
         
         finally{

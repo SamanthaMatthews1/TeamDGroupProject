@@ -4,7 +4,7 @@ package edu.jsu.mcis.tas_fa20;
 
 public class Shift {
     
-    private String id;
+    private int id;
     private String description;
     private long  start;
     private long stop;
@@ -15,7 +15,7 @@ public class Shift {
     private long lunchend;
     private int lunchdeduct;
 
-    public Shift(String id, String description, long start, long stop, int interval, int graceperiod, int dock, long lunchstart, long lunchend, int lunchdeduct) {
+    public Shift(int id, String description, long start, long stop, int interval, int graceperiod, int dock, long lunchstart, long lunchend, int lunchdeduct) {
         this.id = id;
         this.description = description;
         this.start = start;

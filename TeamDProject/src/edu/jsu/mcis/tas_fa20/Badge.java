@@ -42,5 +42,4 @@ public class Badge {
         String s = "#" + id + " (" + name + ")";
         return s;
     }
-  
 }
