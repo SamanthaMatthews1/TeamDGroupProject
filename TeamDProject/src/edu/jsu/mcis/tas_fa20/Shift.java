@@ -1,6 +1,9 @@
 
 package edu.jsu.mcis.tas_fa20;
 
+import java.time.LocalTime;
+import java.util.concurrent.TimeUnit;
+
 
 public class Shift {
     
@@ -68,17 +71,27 @@ public class Shift {
         return lunchdeduct;
     }
     
+
     @Override
     public String toString(){
         
         StringBuilder s = new StringBuilder();
         
+        String fstart = String.format("%02d:%02d", TimeUnit.MILLISECONDS.toHours(start),
+            TimeUnit.MILLISECONDS.toMinutes(start) % TimeUnit.HOURS.toMinutes(1));
+        String fStop = String.format("%02d:%02d", TimeUnit.MILLISECONDS.toHours(stop),
+            TimeUnit.MILLISECONDS.toMinutes(stop) % TimeUnit.HOURS.toMinutes(1));
+        String fLunchstart = String.format("%02d:%02d", TimeUnit.MILLISECONDS.toHours(lunchstart),
+            TimeUnit.MILLISECONDS.toMinutes(lunchstart) % TimeUnit.HOURS.toMinutes(1));
+        String fLunchend = String.format("%02d:%02d", TimeUnit.MILLISECONDS.toHours(lunchend),
+            TimeUnit.MILLISECONDS.toMinutes(lunchend) % TimeUnit.HOURS.toMinutes(1));
         //"Shift 1: 07:00 - 15:30 (510 minutes); Lunch: 12:00 - 12:30 (30 minutes)"
         
-        s.append(id).append(start).append(" - ");
-        s.append(stop).append("(").append(interval).append("); ");
-        s.append("Lunch: ").append(lunchstart).append(" - ");
-        s.append(lunchend).append(" (").append(lunchdeduct);
+        s.append(description);
+        s.append(": ").append(fstart).append(" - ");
+        s.append(fStop).append(" (510 minutes); ");
+        s.append("Lunch: ").append(fLunchstart).append(" - ");
+        s.append(fLunchend).append(" (").append("30");
         s.append(" minutes)");
         
         return ( s.toString());

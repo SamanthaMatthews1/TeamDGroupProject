@@ -14,7 +14,7 @@ public class TeamDProject {
     public static void main(String[] args) {
         // this file is for testing, not for functionality
         TASDatabase db = new TASDatabase();
-        db.getPunch(700);
+        System.out.println(db.getShift(db.getBadge("76E920D9")).toString());
         
         
     }

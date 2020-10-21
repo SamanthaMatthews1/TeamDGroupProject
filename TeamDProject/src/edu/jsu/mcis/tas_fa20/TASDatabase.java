@@ -22,13 +22,13 @@ public class TASDatabase {
         password = "PASSWORD";
         try{
             // CHANGE THIS IF NEEDED
-            //Class.forName("com.mysql.jdbc.Driver"); // EVERYONE ELSE
-            //con = DriverManager.getConnection("jdbc:mysql://localhost/tas", username, password);
+            Class.forName("com.mysql.jdbc.Driver"); // EVERYONE ELSE
+            con = DriverManager.getConnection("jdbc:mysql://localhost/tas", username, password);
             
             
             // DO NOT CHANGE THE NEXT TWO LINES
-            Class.forName("com.mysql.cj.jdbc.Driver"); // WES'S COMPUTER
-            con = DriverManager.getConnection("jdbc:mysql://localhost/tas?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", username, password);
+            //Class.forName("com.mysql.cj.jdbc.Driver"); // WES'S COMPUTER
+            //con = DriverManager.getConnection("jdbc:mysql://localhost/tas?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", username, password);
         
         }catch(Exception e){
             System.out.println(e);
@@ -84,7 +84,7 @@ public class TASDatabase {
                 if(bag.getId().equals(rs.getString("badgeid"))){
                     // get the shift from the badge's shift id, return the shift
                     Statement sta = con.createStatement();
-                    ResultSet res = st.executeQuery("SELECT * FROM shift");
+                    ResultSet res = st.executeQuery("SELECT * FROM shift WHERE id="+rs.getInt("shiftid"));
                     res.next();
                     return new Shift(res.getInt("id"), // shift id type
                             res.getString("description"), // string of description of shift
