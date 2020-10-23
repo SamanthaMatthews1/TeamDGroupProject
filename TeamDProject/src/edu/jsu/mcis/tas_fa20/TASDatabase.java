@@ -22,13 +22,13 @@ public class TASDatabase {
         password = "PASSWORD";
         try{
             // CHANGE THIS IF NEEDED
-            Class.forName("com.mysql.jdbc.Driver"); // EVERYONE ELSE
-            con = DriverManager.getConnection("jdbc:mysql://localhost/tas", username, password);
+            //Class.forName("com.mysql.jdbc.Driver"); // EVERYONE ELSE
+            //con = DriverManager.getConnection("jdbc:mysql://localhost/tas?serverTimezone=UTC", username, password);
             
             
             // DO NOT CHANGE THE NEXT TWO LINES
-            //Class.forName("com.mysql.cj.jdbc.Driver"); // WES'S COMPUTER
-            //con = DriverManager.getConnection("jdbc:mysql://localhost/tas?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", username, password);
+            Class.forName("com.mysql.cj.jdbc.Driver"); // WES'S COMPUTER
+            con = DriverManager.getConnection("jdbc:mysql://localhost/tas?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", username, password);
         
         }catch(Exception e){
             System.out.println(e);
@@ -126,24 +126,49 @@ public class TASDatabase {
         }
     }
     
+    public int insertPunchSmall(Punch p){
+        try{
+            Statement st = con.createStatement();
+            int id;
+            ResultSet rs = st.executeQuery("SELECT MAX(id) FROM punch");
+            rs.next();
+            id = rs.getInt(1) + 1;
+            StringBuilder update = new StringBuilder();
+            update.append("INSERT INTO punch (badgeid, terminalid, punchtypeid, id) VALUES (");
+            update.append(p.getBadgeid()).append(", ").append(p.getTerminalid());
+            update.append(", ").append(p.getPunchTypeId()).append(", ");
+            update.append(id).append(")");
+            st.executeUpdate(update.toString());
+            return id;
+        }catch(Exception e){
+            return -1;   
+        }
+    }
     
     
     public int insertPunch(Punch p){// -1 output means error
         try{
+            p.getOriginaltimestamp();
+        }catch(Exception e){
+            return insertPunchSmall(p);
+        }
+        try{
             Statement st = con.createStatement();
-            int id = -1;
+            int id;
             ResultSet rs = st.executeQuery("SELECT MAX(id) FROM punch");
             rs.next();
             id = rs.getInt(1) + 1;
             StringBuilder query = new StringBuilder();
-            query.append("INSERT INTO punch VALUES (");
-            query.append(id).append(", ").append(p.getTerminalId()).append(", ");
-            query.append(p.getBadge().getId()).append(", ").append(p.getTimestamp());
-            query.append(", ").append(p.getPunchTypeId()).append(")");
-            ResultSet res = st.executeQuery(query.toString());
-            
+            query.append("INSERT INTO punch (id, terminalid, badgeid, originaltimestamp, punchtypeid) VALUES (");
+            query.append(id).append(", ").append(p.getTerminalId()).append(", '");
+            Timestamp temp = p.getTimestamp();
+            temp.setTime(temp.getTime() + (60*60*5 -1)*1000);
+            query.append(p.getBadge().getId()).append("', '").append(temp);
+            query.append("', ").append(p.getPunchTypeId()).append(")");
+            st.executeUpdate(query.toString());
             return id;
         } catch(Exception e){
+            e.printStackTrace();
         }
         return -1;
     }

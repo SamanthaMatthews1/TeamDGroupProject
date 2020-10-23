@@ -29,9 +29,14 @@ public class Punch {
         this.badge = badge;
         this.terminalid = terminalId;
         this.punchtypeid = punchType;
+        date = new Timestamp(System.currentTimeMillis());
     }
     
     public int getTerminalId() {
+        return terminalid;
+    }
+    
+    public int getTerminalid(){
         return terminalid;
     }
     
@@ -43,12 +48,24 @@ public class Punch {
         return badge;
     }
     
+    public String getBadgeid(){
+        return badge.getId();
+    }
+    
     public int getPunchTypeId() {
+        return punchtypeid;
+    }
+    
+    public int getPunchtypeid(){
         return punchtypeid;
     }
     
     public Timestamp getTimestamp() {
         return date;
+    }
+    
+    public long getOriginaltimestamp(){
+        return date.getTime();
     }
     
     public String printOriginalTimestamp(){
@@ -63,7 +80,7 @@ public class Punch {
         else{
             str.append("TIMED OUT: ");
         }
-        Date dt = new Date(date.getTime()+TimeUnit.HOURS.toMillis(5));
+        Date dt = new Date(date.getTime() + (60*60*5)*1000);
         SimpleDateFormat sdf = new SimpleDateFormat("E");
         String day = sdf.format(dt);
         day = day.toUpperCase();
@@ -71,6 +88,7 @@ public class Punch {
         sdf = new SimpleDateFormat("MM/dd/yyyy");
         day = sdf.format(dt);
         str.append(day).append(" ");
+        
         sdf = new SimpleDateFormat("HH:mm:ss");
         day = sdf.format(dt);
         str.append(day);
