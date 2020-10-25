@@ -22,13 +22,13 @@ public class TASDatabase {
         password = "PASSWORD";
         try{
             // CHANGE THIS IF NEEDED
-            //Class.forName("com.mysql.jdbc.Driver"); // EVERYONE ELSE
-            //con = DriverManager.getConnection("jdbc:mysql://localhost/tas?serverTimezone=UTC", username, password);
+            Class.forName("com.mysql.jdbc.Driver"); // EVERYONE ELSE
+            con = DriverManager.getConnection("jdbc:mysql://localhost/tas?serverTimezone=UTC", username, password);
             
             
             // DO NOT CHANGE THE NEXT TWO LINES
-            Class.forName("com.mysql.cj.jdbc.Driver"); // WES'S COMPUTER
-            con = DriverManager.getConnection("jdbc:mysql://localhost/tas?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", username, password);
+            //Class.forName("com.mysql.cj.jdbc.Driver"); // WES'S COMPUTER
+            //con = DriverManager.getConnection("jdbc:mysql://localhost/tas?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", username, password);
         
         }catch(Exception e){
             System.out.println(e);
