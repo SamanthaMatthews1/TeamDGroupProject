@@ -14,10 +14,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Calendar;
 
-import org.json.simple.JSONValue;
+//import org.json.simple.JSONValue;
 
 public class TASLogic {
     
+
    // public static int calculateTotalMinutes(ArrayList<Punch> dailypunchlist, Shift shift){
         //int total = 0;
        // int day;
@@ -65,5 +66,5 @@ public class TASLogic {
        // }
 
       //  return JSONValue.toJSONString(mapList);
-   // }
+}
 

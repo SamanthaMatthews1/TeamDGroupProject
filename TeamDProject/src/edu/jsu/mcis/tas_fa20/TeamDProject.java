@@ -5,6 +5,11 @@
  */
 package edu.jsu.mcis.tas_fa20;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 
 public class TeamDProject {
 
@@ -15,16 +20,20 @@ public class TeamDProject {
         // this file is for testing, not for functionality
         TASDatabase db = new TASDatabase();
         Shift s1 = db.getShift(1);
-
+        System.out.println(s1.getStart());
+        Date date = new Date(s1.getStart());
+        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC+1"));
+        String formattedDate = sdf.format(date);
+        String [] splits = formattedDate.split(":");
+        int hours = Integer.parseInt(splits[0]);
+        int minutes = Integer.parseInt(splits[1]);
+        System.out.println(hours);
+        System.out.println(minutes);
         Punch p1 = db.getPunch(3634);
-        Punch p2 = db.getPunch(3687);
-        Punch p3 = db.getPunch(3688);
-        Punch p4 = db.getPunch(3716);
         p1.adjust(s1);
-        String s2 = p1.printOriginalTimestamp();
-        String s3 = p1.printAdjustedTimestamp();
-        System.out.println(s2);
-        System.out.println(s3);
+        
+        
 		
         /* Adjust Punches According to Shift Rulesets */
         
