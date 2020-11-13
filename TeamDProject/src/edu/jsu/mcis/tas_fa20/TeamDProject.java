@@ -14,7 +14,21 @@ public class TeamDProject {
     public static void main(String[] args) {
         // this file is for testing, not for functionality
         TASDatabase db = new TASDatabase();
-        System.out.println(db.getShift(db.getBadge("76E920D9")).toString());
+        Shift s1 = db.getShift(1);
+
+        Punch p1 = db.getPunch(3634);
+        Punch p2 = db.getPunch(3687);
+        Punch p3 = db.getPunch(3688);
+        Punch p4 = db.getPunch(3716);
+        p1.adjust(s1);
+        String s2 = p1.printOriginalTimestamp();
+        String s3 = p1.printAdjustedTimestamp();
+        System.out.println(s2);
+        System.out.println(s3);
+		
+        /* Adjust Punches According to Shift Rulesets */
+        
+        p1.adjust(s1);
         
         
     }

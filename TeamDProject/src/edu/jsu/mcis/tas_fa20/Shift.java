@@ -1,7 +1,9 @@
 
 package edu.jsu.mcis.tas_fa20;
 
-import java.time.LocalTime;
+
+import java.util.Date;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 
@@ -70,6 +72,9 @@ public class Shift {
     public int getLunchdeduct() {
         return lunchdeduct;
     }
+    
+
+    
     
 
     @Override

@@ -3,9 +3,8 @@ package edu.jsu.mcis.tas_fa20;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
-import java.lang.Math;
 /**
  *
  * @author penguin
@@ -78,21 +77,133 @@ public class Punch {
     
     
     public void adjust(Shift s){
-        long earliestStart = s.getStart() - s.getGraceperiod();
-        long start = s.getStart();
-        long latestStart = s.getStart() + s.getGraceperiod();
-        long earliestStop = s.getStop() - s.getGraceperiod();
-        long stop = s.getStop();
-        long latestStop = s.getStop() + s.getGraceperiod();
-        long earliestLunchStart = s.getLunchstart() - s.getGraceperiod();
-        long lunchStart = s.getLunchstart();
-        long latestLunchStart = s.getLunchstart() + s.getGraceperiod();
-        long earliestLunchEnd = s.getLunchend() - s.getGraceperiod();
-        long lunchEnd = s.getLunchend();
-        long latestLunchEnd = s.getLunchend() + s.getGraceperiod();
-        
         long time = date.getTime();
+        LocalTime ttime = new Timestamp(time).toLocalDateTime().toLocalTime();
+        long tempTime = ttime.toSecondOfDay();
         
+        long earliestStart = s.getStart() - s.getInterval() * 60;
+        LocalTime es = new Timestamp(earliestStart).toLocalDateTime().toLocalTime();
+        earliestStart = es.toSecondOfDay();
+        
+        long start = s.getStart();
+        LocalTime sr = new Timestamp(start).toLocalDateTime().toLocalTime();
+        start = sr.toSecondOfDay();
+        long startGrace = s.getStart() + s.getGraceperiod() * 60;
+        LocalTime sg = new Timestamp(startGrace).toLocalDateTime().toLocalTime();
+        startGrace = sg.toSecondOfDay();
+        
+        long latestStart = s.getStart() + s.getInterval() * 60;
+        LocalTime ls = new Timestamp(latestStart).toLocalDateTime().toLocalTime();
+        latestStart = ls.toSecondOfDay();
+        
+        
+        long earliestStop = s.getStop() - s.getInterval() * 60;
+        LocalTime et = new Timestamp(earliestStop).toLocalDateTime().toLocalTime();
+        earliestStop = et.toSecondOfDay();
+        long stop = s.getStop();
+        LocalTime st = new Timestamp(stop).toLocalDateTime().toLocalTime();
+        stop = st.toSecondOfDay();
+        
+        long stopGrace = s.getStop() - s.getGraceperiod() * 60;
+        LocalTime tg = new Timestamp(stopGrace).toLocalDateTime().toLocalTime();
+        stopGrace = tg.toSecondOfDay();
+        long latestStop = s.getStop() + s.getInterval() * 60;
+        LocalTime lt = new Timestamp(latestStop).toLocalDateTime().toLocalTime();
+        latestStop = lt.toSecondOfDay();
+        
+        
+        long lunchStart = s.getLunchstart();
+        LocalTime lunchs = new Timestamp(lunchStart).toLocalDateTime().toLocalTime();
+        lunchStart = lunchs.toSecondOfDay();
+        long lunchEnd = s.getLunchend();
+        LocalTime lunche = new Timestamp(lunchEnd).toLocalDateTime().toLocalTime();
+        lunchEnd = lunche.toSecondOfDay();
+        
+        
+        
+        Timestamp tadjusted = new Timestamp(round(time, s.getInterval() * 60000));
+        
+        if(time - time % 60000 == tadjusted.getTime()){
+            lastAdjusted = " (None)";
+            adjusted = tadjusted;
+            return;
+        }
+        
+        
+        if(punchtypeid == 0){ // clocked out
+            if(Math.abs(tempTime - lunchStart) < Math.abs(tempTime - stop)){ // lunch break
+                adjusted = tadjusted;
+                lastAdjusted = " (Interval Round)";
+
+                if(tempTime > lunchStart){
+                    lastAdjusted = " (Lunch Start)";
+                }
+            }
+            else{ // clocking out
+                if(tempTime > stop){
+                    if(tempTime < latestStop){
+                        lastAdjusted = " (Shift Stop)";
+                        adjusted = roundDown(time, s.getInterval());
+                    }
+                    else{
+                        lastAdjusted = " (Interval Round)";
+                        adjusted = roundUp(time, s.getInterval());
+                    }
+                }
+                else{
+                    if(tempTime > stopGrace){
+                        adjusted = roundUp(time, s.getInterval());
+                        lastAdjusted = " (Shift Stop)";
+                        
+                    }else if(tempTime > earliestStop){
+                        adjusted = roundDown(time, s.getInterval());
+                        lastAdjusted = " (Shift Dock)";
+                    }else{
+                        adjusted = new Timestamp(round(time, s.getInterval()));
+                        lastAdjusted = " (Interval Round)";
+                    }
+                }
+            }
+        }else if(punchtypeid == 1){ // clocked in
+            if(Math.abs(time - lunchEnd) < Math.abs(tempTime - start)){ // lunch break over
+                adjusted = new Timestamp(round(time, s.getInterval()));
+                lastAdjusted = " (Lunch Stop)";
+                if(tempTime > lunchEnd){
+                    lastAdjusted = " (Interval Round)";
+                }
+            }else{
+                if(tempTime > start){
+                    if(tempTime < startGrace){
+                        adjusted = roundDown(time, s.getInterval());
+                        lastAdjusted = " (Shift Start)";
+                    }
+                    else if (tempTime < latestStart){
+                        adjusted = roundDown(time, s.getInterval());
+                        lastAdjusted = " (Shift Dock)";
+                    }
+                    else{
+                        adjusted = roundUp(time, s.getInterval()); // not working?
+                        lastAdjusted = " (Shift Start)";
+                    }
+                }else{
+                    if(tempTime > earliestStart){ // round up no matter what
+                        adjusted = roundUp(time, s.getInterval());
+                        lastAdjusted = " (Shift Start)";
+                    }else{
+                        lastAdjusted = " (Interval Round)";
+                        adjusted = roundUp(time, s.getInterval());
+                    }
+                }
+            }
+        }else{ // timed out... worst case senario i guess
+            adjusted = new Timestamp(round(time, s.getInterval()));
+            lastAdjusted = " (Interval Round)";
+        }
+
+        
+        
+        
+        /*
         if(punchtypeid == 0){
             if(Math.abs(time-lunchStart) < Math.abs(time-stop)){
                 if(time < latestLunchStart && time > earliestLunchStart){
@@ -184,7 +295,7 @@ public class Punch {
                     lastAdjusted = " (Interval Round)";
                 }
             }
-        }
+        }*/
     }
     
     public String printOriginalTimestamp(){
@@ -242,5 +353,25 @@ public class Punch {
         str.append(lastAdjusted);
         
         return str.toString();
+    }
+    
+    private long round(long time, long interval){
+        if(time%interval > interval/2){
+            time += interval - time%interval;
+            return time;
+        }
+        else{
+            time -= time%interval;
+        }
+        return time;
+    }
+    
+    private Timestamp roundUp(long time, long interval){
+        Timestamp temp = roundDown(time, interval*60000);
+        return new Timestamp(temp.getTime() + 15*60*1000);
+    }
+    private Timestamp roundDown(long time, long interval){
+        time -= time%(interval);
+        return new Timestamp(time);
     }
 }
