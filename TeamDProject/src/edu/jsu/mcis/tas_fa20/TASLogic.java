@@ -1,70 +1,52 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.jsu.mcis.tas_fa20;
 
-/**
- *
- * @author Sam
- */
-
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Calendar;
-
-//import org.json.simple.JSONValue;
+import org.json.simple.*;
 
 public class TASLogic {
-    
+    public static int calculateTotalMinutes(ArrayList<Punch> punchList, Shift shift) {
+        int totalMinutes = 0;
+        int punchCount = 0;
+        GregorianCalendar lastInstant = null;
 
-   // public static int calculateTotalMinutes(ArrayList<Punch> dailypunchlist, Shift shift){
-        //int total = 0;
-       // int day;
-       // long inTime = 0;
+        for (Punch punch : punchList) {
+            if (punch.type == Punch.PunchType.ClockIn) {
+                punchCount++;
+                lastInstant = punch.getAdjustedInstant();
+            } else if (punch.type == Punch.PunchType.ClockOut) {
+                punchCount++;
+                if (lastInstant != null) {
+                    totalMinutes += TimeUnit.MINUTES.convert(Math.abs(punch.getAdjustedInstant().getTimeInMillis() - lastInstant.getTimeInMillis()), TimeUnit.MILLISECONDS);
+                }
+            }
+        }
 
-       // Calendar cal = Calendar.getInstance();
-       // cal.setTimeInMillis(dailypunchlist.get(0).getOriginaltimestamp());
-        //day = cal.get(Calendar.DAY_OF_WEEK);
+        if (punchCount == 2 && totalMinutes >= shift.shiftDuration) {
+            totalMinutes -= shift.lunchDuration;
+        }
 
-        //for (Punch punch : dailypunchlist) {
-          //  switch (punch.getPunchtypeid()) {
-             //   case 0:
-                   // int minutes = (int)((punch.getAdjustedtimestamp() - inTime) / 60000);
-                   // if (minutes > shift.getLunchDeduct(day)) {
-                   //     minutes -= shift.getLunchDuration(day);
-                   // }
-                   // total += minutes;
-                   // break;
-               // case 1:
-                 //   inTime = punch.getAdjustedtimestamp();
-                 //   break;
-               // case 2:
-           //         break;
-          //  }
-      //  }
+        return totalMinutes;
+    }
 
-      //  return total;
-//}
- 
-    //F5
-//public static String getPunchListAsJSON(ArrayList<Punch> dailypunchlist){
-        //HashMap<String, String> map;
-       // ArrayList<HashMap<String, String>> mapList = new ArrayList<>();
+    public static String getPunchListAsJSON(ArrayList<Punch> dailyPunchList) {
+        ArrayList<HashMap<String, String>> jsonData = new ArrayList<>();
 
-        //for (Punch punch : dailypunchlist) {
-           // map = new HashMap<>();
-           // map.put("id", String.valueOf(punch.getId()));
-           // map.put("terminalid", String.valueOf(punch.getTerminalid()));
-           // map.put("punchtypeid", String.valueOf(punch.getPunchtypeid()));
-           // map.put("badgeid", punch.getBadgeid());
-           // map.put("originaltimestamp", String.valueOf(punch.getOriginaltimestamp()));
-           // map.put("adjustedtimestamp", String.valueOf(punch.getAdjustedtimestamp()));
-           // map.put("punchdata", punch.getAdjustmenttype());
-          //  mapList.add(map);
-       // }
+        for(Punch punch : dailyPunchList) {
+            HashMap<String, String> punchData = new HashMap<>();
+            punchData.put("id", String.valueOf(punch.getId()));
+            punchData.put("badgeid", String.valueOf(punch.getBadgeid()));
+            punchData.put("terminalid", String.valueOf(punch.getTerminalid()));
+            punchData.put("punchtypeid", String.valueOf(punch.getPunchtypeid()));
+            punchData.put("punchdata", String.valueOf(punch.getAdjustmentType()));
+            punchData.put("originaltimestamp", String.valueOf(punch.getOriginaltimestamp()));
+            punchData.put("adjustedtimestamp", String.valueOf(punch.getAdjustedInstant().getTimeInMillis()));
 
-      //  return JSONValue.toJSONString(mapList);
+            jsonData.add(punchData);
+        }
+
+        return JSONValue.toJSONString(jsonData);
+    }
 }
-
