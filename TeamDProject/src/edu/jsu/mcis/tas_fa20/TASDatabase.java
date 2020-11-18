@@ -1,11 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.jsu.mcis.tas_fa20;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -13,168 +9,202 @@ import java.util.GregorianCalendar;
 public class TASDatabase {
     
     private Connection con;
+    
     private String username;
     private String password;
     
-    
-    TASDatabase(){ // create database interface
+    public TASDatabase() { // create database interface
+        
         username = "tasuser";
         password = "PASSWORD";
-        try{
+        
+        try {
+
             // CHANGE THIS IF NEEDED
             //Class.forName("com.mysql.jdbc.Driver"); // EVERYONE ELSE
             //con = DriverManager.getConnection("jdbc:mysql://localhost/tas?serverTimezone=UTC", username, password);
             
-            
             // DO NOT CHANGE THE NEXT TWO LINES
             Class.forName("com.mysql.cj.jdbc.Driver"); // WES'S COMPUTER
-            con = DriverManager.getConnection("jdbc:mysql://localhost/tas?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", username, password);
+            //con = DriverManager.getConnection("jdbc:mysql://localhost/tas?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC", username, password);
+            con = DriverManager.getConnection("jdbc:mysql://localhost/tas?useUnicode=true&autoReconnect=true&useSSL=false", username, password);
         
-        }catch(Exception e){
-            System.out.println(e);
         }
-    }
+        catch(Exception e){ e.printStackTrace(); }
+        
+    }    
     
-    
-    public Badge getBadge(String id){
-        try{
-            Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery("SELECT * FROM badge");
-            while(rs.next()){
-                if(rs.getString("id").equals(id)){
-                    // make new badge, return new badge
-                    return new Badge(rs.getString("id"), 
-                            rs.getString("description"));
-                }
+    public Badge getBadge(String id) {
+        
+        Badge b = null;
+        
+        try {
+            
+            String query = "SELECT * FROM badge WHERE id = ?";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, id);
+            
+            ResultSet res = ps.executeQuery();
+            
+            if (res.next()) {                
+                b = new Badge(id, res.getString("description"));
             }
-        }catch(Exception e){
-            return null;
+            
         }
-        return null;
+        catch(Exception e){ e.printStackTrace(); }
+        
+        return b;
+        
     }
     
-    public Punch getPunch(int id){
-        try{
-            Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery("SELECT * FROM punch");
-            while(rs.next()){
-                if(rs.getInt("id") == (id)){
-                    // make new punch, return new punch
-                    // punch id int, terminal id int, badge id string
-                    // timestamp (long int), punch id type int
-                    //System.out.println(new Date(rs.getTimestamp("originaltimestamp").getTime()));
-                    return new Punch(rs.getInt("id"),  // punch number id
-                            rs.getInt("terminalid"),  // terminal of punch
-                            getBadge(rs.getString("badgeid")),  // badge of punch
-                            rs.getTimestamp("originaltimestamp"),  // original timestamp of punch
-                            rs.getInt("punchtypeid")); // punched auto or manual
-                }
-            }
-        }catch(Exception e){
-            return null;
-        }
-        return null;
-    }
-    
-    public Shift getShift(Badge bag){
-        try{
-            Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery("SELECT * FROM employee");
-            while(rs.next()){
-                if(bag.getId().equals(rs.getString("badgeid"))){
-                    // get the shift from the badge's shift id, return the shift
-                    Statement sta = con.createStatement();
-                    ResultSet res = st.executeQuery("SELECT * FROM shift WHERE id="+rs.getInt("shiftid"));
-                    res.next();
-                    return new Shift(res.getInt("id"), // shift id type
-                            res.getString("description"), // string of description of shift
-                            res.getTime("start").getTime(),  // long (miliseconds after 12 am)
-                            res.getTime("stop").getTime(),  // long (miliseconds after 12 am) 
-                            res.getInt("interval"), // minutes not time
-                            res.getInt("graceperiod"),  // minutes not time
-                            res.getInt("dock"),  // minutes not time
-                            res.getTime("lunchstart").getTime(),  // long (miliseconds after 12 am)
-                            res.getTime("lunchstop").getTime(),  // long (miliseconds after 12 am)
-                            res.getInt("lunchdeduct")); // minutes not time
-                }
-            }
-        }catch(Exception e){
-            System.out.println(e);
-            return null;
-        }
-        return null;
-    }
-    
-    public Shift getShift(int id){
-        try{
-            Statement st = con.createStatement();
-            ResultSet res = st.executeQuery("SELECT * FROM shift WHERE id="+id);
-            res.next();
-            return new Shift(res.getInt("id"), // shift id type
-                            res.getString("description"), // string of description of shift
-                            res.getTime("start").getTime(),  // long (miliseconds after 12 am)
-                            res.getTime("stop").getTime(),  // long (miliseconds after 12 am) 
-                            res.getInt("interval"), // minutes not time
-                            res.getInt("graceperiod"),  // minutes not time
-                            res.getInt("dock"),  // minutes not time
-                            res.getTime("lunchstart").getTime(),  // long (miliseconds after 12 am)
-                            res.getTime("lunchstop").getTime(),  // long (miliseconds after 12 am)
-                            res.getInt("lunchdeduct")); // minutes not time
-        }
-        catch(Exception e){
-            return null;
-        }
-    }
-    
-    public int insertPunchSmall(Punch p){
-        try{
-            Statement st = con.createStatement();
-            int id;
-            ResultSet rs = st.executeQuery("SELECT MAX(id) FROM punch");
-            rs.next();
-            id = rs.getInt(1) + 1;
-            StringBuilder update = new StringBuilder();
-            update.append("INSERT INTO punch (badgeid, terminalid, punchtypeid, id) VALUES (");
-            update.append(p.getBadgeid()).append(", ").append(p.getTerminalid());
-            update.append(", ").append(p.getPunchTypeId()).append(", ");
-            update.append(id).append(")");
-            st.executeUpdate(update.toString());
-            return id;
-        }catch(Exception e){
-            return -1;   
-        }
-    }
-    
-    
-    public int insertPunch(Punch p){// -1 output means error
-        try{
-            p.getOriginaltimestamp();
-        }catch(Exception e){
-            return insertPunchSmall(p);
-        }
-        try{
-            Statement st = con.createStatement();
-            int id;
-            ResultSet rs = st.executeQuery("SELECT MAX(id) FROM punch");
-            rs.next();
-            id = rs.getInt(1) + 1;
-            StringBuilder query = new StringBuilder();
-            query.append("INSERT INTO punch (id, terminalid, badgeid, originaltimestamp, punchtypeid) VALUES (");
-            query.append(id).append(", ").append(p.getTerminalId()).append(", '");
-            Timestamp temp = p.getTimestamp();
-            temp.setTime(temp.getTime() + (60*60*5 -1)*1000);
-            query.append(p.getBadge().getId()).append("', '").append(temp);
-            query.append("', ").append(p.getPunchTypeId()).append(")");
-            st.executeUpdate(query.toString());
-            return id;
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-        return -1;
-    }
+    public Punch getPunch(int id) {
+        
+        Punch p = null;
+        
+        try {
+            
+            String query = "SELECT terminalid, badgeid, punchtypeid, UNIX_TIMESTAMP(`originaltimestamp`) * 1000 AS originaltimestamp FROM punch WHERE punch.id = ?";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, id);
+            
+            ResultSet res = ps.executeQuery();
 
+            if (res.next()) {
+                
+                Badge badge = getBadge(res.getString("badgeid"));
+                int terminalid = res.getInt("terminalid");
+                int punchtypeid = res.getInt("punchtypeid");                
+                long originaltimestamp = res.getLong("originaltimestamp");
+                
+                Timestamp date = new Timestamp(originaltimestamp);
+                
+                p = new Punch(id, terminalid, badge, date, punchtypeid);
+                    
+            }
 
+            res.close();
+
+        }
+        catch (Exception e) { e.printStackTrace(); }
+        
+        return p;
+        
+    }
     
+    public Shift getShift(Badge badge) {
+
+        String id = badge.getId();
+        Shift s = null;
+        
+        try {
+
+            String query = "SELECT * FROM employee WHERE badgeid = ?";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, id);
+            
+            ResultSet res = ps.executeQuery();
+
+            if (res.next()) {
+                
+                int shiftid = res.getInt("shiftid");
+                s = getShift(shiftid);
+                    
+            }
+
+            res.close();
+
+        }
+        catch (Exception e) { e.printStackTrace(); }
+        
+        return s;
+        
+    }
+    
+    public Shift getShift(int id) {
+        
+        Shift s = null;
+        
+        try {
+            
+            String query = "SELECT * FROM shift WHERE id = ?";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setInt(1, id);
+            
+            ResultSet res = ps.executeQuery();
+            
+            if (res.next()) {
+                s = new Shift(res.getInt("id"), // shift id type
+                              res.getString("description"), // string of description of shift
+                              res.getTime("start").getTime(),  // long (miliseconds after 12 am)
+                              res.getTime("stop").getTime(),  // long (miliseconds after 12 am) 
+                              res.getInt("interval"), // minutes not time
+                              res.getInt("graceperiod"),  // minutes not time
+                              res.getInt("dock"),  // minutes not time
+                              res.getTime("lunchstart").getTime(),  // long (miliseconds after 12 am)
+                              res.getTime("lunchstop").getTime(),  // long (miliseconds after 12 am)
+                              res.getInt("lunchdeduct")); // minutes not time
+            }
+            
+            res.close();
+            
+        }
+        catch(Exception e) { e.printStackTrace(); }
+        
+        return s;
+        
+    }
+    
+    public int insertPunch(Punch p) {
+
+        int key = 0;
+
+        try {
+
+            /* Get Punch Parameters */
+
+            String badgeid = p.getBadgeid();
+            int terminalid = p.getTerminalid();
+            int punchtypeid = p.getPunchtypeid();
+
+            /* Get Punch Timestamp as String */
+
+            GregorianCalendar ots = new GregorianCalendar();
+            ots.setTimeInMillis(p.getOriginaltimestamp());
+            String otsString = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(ots.getTime());
+
+            /* Parametrize Query */
+
+            String query = "INSERT INTO punch (terminalid, badgeid, originaltimestamp, punchtypeid) VALUES (?, ?, ?, ?)";
+
+            PreparedStatement ps = con.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+            ps.setInt(1, terminalid);
+            ps.setString(2, badgeid);
+            ps.setString(3, otsString);
+            ps.setInt(4, punchtypeid);
+
+            /* Execute Query */
+
+            int result = ps.executeUpdate();
+
+            /* Was insertion successful?  If so, get generated key */
+
+            if (result == 1) {
+
+                ResultSet keys = ps.getGeneratedKeys();
+
+                if (keys.next()) {
+                    key = keys.getInt(1);
+                }
+
+            }
+
+        } // End try{}
+
+        catch (Exception e) { e.printStackTrace(); }
+
+        return key;
+
+    }
     
     public ArrayList<Punch> getDailyPunchList(Badge bag, long ts){
         ArrayList<Punch> punches = new ArrayList<Punch>();
@@ -271,7 +301,5 @@ public class TASDatabase {
         return punches;
         
     }
-    
-
 
 }
