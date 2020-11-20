@@ -18,26 +18,7 @@ public class TeamDProject {
      */
     public static void main(String[] args) {
         // this file is for testing, not for functionality
-        TASDatabase db = new TASDatabase();
-        Shift s1 = db.getShift(1);
-        System.out.println(s1.getStart());
-        Date date = new Date(s1.getStart());
-        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC+1"));
-        String formattedDate = sdf.format(date);
-        String [] splits = formattedDate.split(":");
-        int hours = Integer.parseInt(splits[0]);
-        int minutes = Integer.parseInt(splits[1]);
-        System.out.println(hours);
-        System.out.println(minutes);
-        Punch p1 = db.getPunch(3634);
-        p1.adjust(s1);
-        
-        
-		
-        /* Adjust Punches According to Shift Rulesets */
-        
-        p1.adjust(s1);
+  
         
         
     }

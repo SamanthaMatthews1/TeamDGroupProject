@@ -5,7 +5,7 @@ import java.util.GregorianCalendar;
 import java.util.concurrent.TimeUnit;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-    
+
 public class Shift {
     
     private int id;

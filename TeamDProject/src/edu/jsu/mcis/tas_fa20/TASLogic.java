@@ -7,25 +7,26 @@ import java.util.HashMap;
 import org.json.simple.*;
 
 public class TASLogic {
+    
     public static int calculateTotalMinutes(ArrayList<Punch> punchList, Shift shift) {
         int totalMinutes = 0;
         int punchCount = 0;
         GregorianCalendar lastInstant = null;
 
         for (Punch punch : punchList) {
-            if (punch.type == Punch.PunchType.ClockIn) {
+            if (punch.getPunchtypeid() == 1) {
                 punchCount++;
-                lastInstant = punch.getAdjustedInstant();
-            } else if (punch.type == Punch.PunchType.ClockOut) {
-                punchCount++;
+                lastInstant = new GregorianCalendar();
+                lastInstant.setTime(new Date(punch.getAdjustedtimestamp()));
+            } else if (punch.getPunchtypeid() == 0){
                 if (lastInstant != null) {
-                    totalMinutes += TimeUnit.MINUTES.convert(Math.abs(punch.getAdjustedInstant().getTimeInMillis() - lastInstant.getTimeInMillis()), TimeUnit.MILLISECONDS);
+                    totalMinutes += TimeUnit.MINUTES.convert(Math.abs(punch.getAdjustedtimestamp() - lastInstant.getTimeInMillis()), TimeUnit.MILLISECONDS);
                 }
             }
         }
 
-        if (punchCount == 2 && totalMinutes >= shift.shiftDuration) {
-            totalMinutes -= shift.lunchDuration;
+        if (punchCount == 2 && totalMinutes >= shift.getShiftDuration()) {
+            totalMinutes -= shift.getLunchDuration();
         }
 
         return totalMinutes;
@@ -40,13 +41,15 @@ public class TASLogic {
             punchData.put("badgeid", String.valueOf(punch.getBadgeid()));
             punchData.put("terminalid", String.valueOf(punch.getTerminalid()));
             punchData.put("punchtypeid", String.valueOf(punch.getPunchtypeid()));
-            punchData.put("punchdata", String.valueOf(punch.getAdjustmentType()));
+            punchData.put("punchdata", String.valueOf(punch.getAdjustedType()));
             punchData.put("originaltimestamp", String.valueOf(punch.getOriginaltimestamp()));
-            punchData.put("adjustedtimestamp", String.valueOf(punch.getAdjustedInstant().getTimeInMillis()));
+            punchData.put("adjustedtimestamp", String.valueOf(punch.getAdjustedtimestamp()));
 
             jsonData.add(punchData);
         }
-
-        return JSONValue.toJSONString(jsonData);
+        
+        return jsonData.toString();
+        //return JSONValue.toJSONString(jsonData);
     }
+
 }

@@ -430,5 +430,8 @@ public class Punch {
         return (new Timestamp(originaltimestamp));
         
     }
+    public String getAdjustedType(){
+        return adjustmentType;
+    }
     
 }
