@@ -19,13 +19,15 @@ public class TASLogic {
                 lastInstant = new GregorianCalendar();
                 lastInstant.setTime(new Date(punch.getAdjustedtimestamp()));
             } else if (punch.getPunchtypeid() == 0){
+                punchCount++;
                 if (lastInstant != null) {
                     totalMinutes += TimeUnit.MINUTES.convert(Math.abs(punch.getAdjustedtimestamp() - lastInstant.getTimeInMillis()), TimeUnit.MILLISECONDS);
                 }
             }
         }
-
+        
         if (punchCount == 2 && totalMinutes >= shift.getShiftDuration()) {
+            System.out.println("This is a test");
             totalMinutes -= shift.getLunchDuration();
         }
 

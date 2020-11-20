@@ -7,6 +7,7 @@ package edu.jsu.mcis.tas_fa20;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -18,9 +19,6 @@ public class TeamDProject {
      */
     public static void main(String[] args) {
         // this file is for testing, not for functionality
-  
-        
-        
     }
     
 }
